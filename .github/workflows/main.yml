@@ -3,7 +3,7 @@ name: Discord Reminder
 on:
   schedule:
     # Run daily at 14:25 UTC
-    - cron: '55 13 * * *'
+    - cron: '55 5 * * *'
 
 jobs:
   send-reminder:
