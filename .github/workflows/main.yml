@@ -37,7 +37,7 @@ jobs:
         if: env.run == 'yes'
         run: |
           curl -H "Content-Type: application/json" \
-               -d '{"content":"@everyone ⏰ Reminder from GitHub Actions at 14:25 UTC!"}' \
+               -d '{"content":"@everyone ⏰ its time to Bear Trap 2!"}' \
                ${{ secrets.DISCORD_WEBHOOK }}
 
       - name: Update last run time
