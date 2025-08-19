@@ -1,0 +1,51 @@
+name: Discord Reminder
+
+on:
+  schedule:
+    # Run daily at 14:25 UTC
+    - cron: '25 14 * * *'
+
+jobs:
+  send-reminder:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Check last run day
+        id: check
+        run: |
+          TODAY=$(date -u +%s) # current time in seconds since epoch
+          FILE=".last_run"
+
+          if [ ! -f "$FILE" ]; then
+            echo "0" > $FILE
+          fi
+
+          LAST=$(cat $FILE)
+          DIFF=$(( (TODAY - LAST) / 86400 ))
+
+          echo "DIFF=$DIFF" >> $GITHUB_ENV
+
+          if [ $DIFF -ge 2 ]; then
+            echo "run=yes" >> $GITHUB_ENV
+          else
+            echo "run=no" >> $GITHUB_ENV
+          fi
+
+      - name: Send Discord reminder
+        if: env.run == 'yes'
+        run: |
+          curl -H "Content-Type: application/json" \
+               -d '{"content":"@everyone ⏰ Reminder from GitHub Actions at 14:25 UTC!"}' \
+               ${{ secrets.DISCORD_WEBHOOK }}
+
+      - name: Update last run time
+        if: env.run == 'yes'
+        run: |
+          date -u +%s > .last_run
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add .last_run
+          git commit -m "Update last run timestamp [skip ci]" || echo "No changes"
+          git push
